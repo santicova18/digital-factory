@@ -1517,8 +1517,10 @@ a {
 
 .collaborator-brand-logo {
   display: block;
-  width: min(100%, 260px);
-  max-height: 80px;
+  width: min(100%, 280px);
+  max-width: 280px;
+  height: auto;
+  max-height: 86px;
   object-fit: contain;
   filter: drop-shadow(0 10px 24px rgba(0, 230, 255, 0.18));
 }
