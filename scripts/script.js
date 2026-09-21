@@ -9,6 +9,13 @@
 const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwn1utVhQJcmX3EUR4jY5tfSM4ud9GBOYhhcbocbT_buOcJpzA3wb1VXcFvQrwlBIuH/exec';
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Redirección inteligente al formulario de verificación rápida si proviene de un escaneo QR
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('access') === 'qr' || urlParams.has('token') || urlParams.get('flow') === 'qr') {
+    window.location.href = `verificar.html${window.location.search}`;
+    return;
+  }
+
   /* ------------------------------------------------------------------------
      2. MANEJO DINÁMICO DE ROLES EN EL FORMULARIO
      ------------------------------------------------------------------------ */

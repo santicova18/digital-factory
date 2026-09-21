@@ -1,0 +1,582 @@
+/* ==========================================================================
+   VERIFICAR.CSS — Estilos Específicos del Formulario de Verificación Rápida
+   Bootcamp Fábrica Digital & IA 2026 • SENA Regional Atlántico
+   ========================================================================== */
+
+.verificar-section {
+  min-height: calc(100vh - 160px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 1rem 4rem 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.verificar-container {
+  width: 100%;
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+/* Tarjeta Principal de Cristal Neón */
+.verificar-card {
+  background: rgba(14, 18, 56, 0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(212, 248, 66, 0.25);
+  border-radius: var(--radius-lg, 24px);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(212, 248, 66, 0.08);
+  padding: 2.25rem 2rem;
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition-smooth);
+}
+
+.verificar-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #2E1065 0%, var(--neon-lime, #D4F842) 50%, #06B6D4 100%);
+}
+
+/* --------------------------------------------------------------------------
+   VISTA: ACCESO RESTRINGIDO
+   -------------------------------------------------------------------------- */
+.unauthorized-box {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.unauthorized-icon-badge {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #ef4444;
+  display: grid;
+  place-items: center;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 10px 25px rgba(239, 68, 68, 0.2);
+  animation: pulse-shield 2.5s infinite ease-in-out;
+}
+
+@keyframes pulse-shield {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+.unauthorized-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 1.65rem;
+  color: #fff;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+.unauthorized-text {
+  color: var(--text-muted, #CBD5E1);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 1.75rem;
+}
+
+.qr-scan-guide {
+  width: 100%;
+  background: rgba(9, 11, 40, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md, 16px);
+  padding: 1.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+
+.qr-scan-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(212, 248, 66, 0.15);
+  color: var(--neon-lime, #D4F842);
+  display: grid;
+  place-items: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.qr-scan-content h4 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.35rem;
+}
+
+.qr-scan-content p {
+  font-size: 0.82rem;
+  color: var(--text-dim, #94A3B8);
+  margin-bottom: 0;
+  line-height: 1.45;
+}
+
+/* --------------------------------------------------------------------------
+   VISTA: FORMULARIO DE VERIFICACIÓN
+   -------------------------------------------------------------------------- */
+.verificar-header {
+  margin-bottom: 1.75rem;
+}
+
+.status-badge-qr {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-full, 9999px);
+  background: rgba(212, 248, 66, 0.12);
+  border: 1px solid rgba(212, 248, 66, 0.35);
+  color: var(--neon-lime, #D4F842);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.status-badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--neon-lime, #D4F842);
+  box-shadow: 0 0 10px var(--neon-lime, #D4F842);
+  animation: pulse-qr 1.8s infinite;
+}
+
+@keyframes pulse-qr {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.5; }
+}
+
+.verificar-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.verificar-desc {
+  font-size: 0.92rem;
+  color: var(--text-muted, #CBD5E1);
+  line-height: 1.5;
+}
+
+/* Campo Único: Documento */
+.verificar-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.field-label .hint {
+  font-size: 0.75rem;
+  color: var(--text-dim, #94A3B8);
+  font-weight: 400;
+}
+
+.field-input-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.field-input-box i.input-icon-lead {
+  position: absolute;
+  left: 1.15rem;
+  color: var(--text-dim, #94A3B8);
+  font-size: 1.15rem;
+  pointer-events: none;
+  transition: var(--transition-fast);
+}
+
+.verificar-input {
+  width: 100%;
+  height: 56px;
+  background: rgba(9, 11, 40, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md, 16px);
+  padding: 0 3rem 0 3.2rem;
+  color: #fff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.12rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  outline: none;
+  transition: var(--transition-fast);
+}
+
+.verificar-input::placeholder {
+  color: #64748b;
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: normal;
+}
+
+.verificar-input:focus {
+  border-color: var(--neon-lime, #D4F842);
+  background: rgba(14, 18, 56, 0.95);
+  box-shadow: 0 0 0 3px rgba(212, 248, 66, 0.25), 0 0 20px rgba(212, 248, 66, 0.15);
+}
+
+.verificar-input:focus + i.input-icon-lead {
+  color: var(--neon-lime, #D4F842);
+}
+
+.verificar-input.has-error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
+}
+
+.verificar-input.is-valid {
+  border-color: var(--neon-lime, #D4F842);
+}
+
+.btn-clear-field {
+  position: absolute;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-dim, #94A3B8);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0.4rem;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: var(--transition-fast);
+}
+
+.btn-clear-field:hover {
+  color: #fff;
+}
+
+.btn-clear-field.visible {
+  display: flex;
+}
+
+.field-error-feedback {
+  display: none;
+  font-size: 0.82rem;
+  color: #f87171;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.2rem;
+}
+
+.field-error-feedback.visible {
+  display: flex;
+}
+
+/* Botón de Enviar Neón SENA */
+.btn-verificar-submit {
+  width: 100%;
+  height: 56px;
+  border-radius: var(--radius-full, 9999px);
+  background: var(--neon-lime, #D4F842);
+  color: var(--text-dark, #07091F);
+  border: none;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  box-shadow: 0 10px 25px rgba(212, 248, 66, 0.35);
+  transition: var(--transition-fast);
+  text-transform: uppercase;
+}
+
+.btn-verificar-submit:hover:not(:disabled) {
+  background: var(--neon-lime-bright, #C8F435);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(212, 248, 66, 0.5);
+}
+
+.btn-verificar-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-verificar-submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Spinner */
+.submit-spinner {
+  display: none;
+  width: 22px;
+  height: 22px;
+  border: 3px solid rgba(7, 9, 31, 0.3);
+  border-top-color: #07091F;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.btn-verificar-submit.loading .btn-submit-label,
+.btn-verificar-submit.loading .btn-submit-icon {
+  display: none;
+}
+
+.btn-verificar-submit.loading .submit-spinner {
+  display: inline-block;
+}
+
+/* --------------------------------------------------------------------------
+   RESULTADOS DINÁMICOS
+   -------------------------------------------------------------------------- */
+.verificar-result-area {
+  margin-top: 1.5rem;
+  min-height: 20px;
+}
+
+.result-card {
+  border-radius: var(--radius-md, 16px);
+  padding: 1.35rem;
+  position: relative;
+  animation: fade-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.result-card.success {
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.result-card.warning {
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.result-card.error {
+  background: rgba(239, 68, 68, 0.14);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.result-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.result-icon-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  font-size: 1.15rem;
+}
+
+.result-card.success .result-icon-badge {
+  background: #10b981;
+  color: #07091F;
+}
+
+.result-card.warning .result-icon-badge {
+  background: #f59e0b;
+  color: #07091F;
+}
+
+.result-card.error .result-icon-badge {
+  background: #ef4444;
+  color: #fff;
+}
+
+.result-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.result-card.success .result-title { color: #34d399; }
+.result-card.warning .result-title { color: #fbbf24; }
+.result-card.error .result-title { color: #f87171; }
+
+.result-desc {
+  font-size: 0.88rem;
+  color: var(--text-muted, #CBD5E1);
+  line-height: 1.5;
+}
+
+/* Grilla de Datos del Participante */
+.attendee-grid {
+  margin-top: 0.5rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+.attendee-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.attendee-item-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim, #94A3B8);
+}
+
+.attendee-item-value {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #fff;
+  margin-top: 0.2rem;
+}
+
+.attendee-stamp {
+  grid-column: span 2;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--radius-xs, 6px);
+  margin-top: 0.25rem;
+}
+
+.result-card.success .attendee-stamp {
+  background: rgba(16, 185, 129, 0.2);
+  color: #a7f3d0;
+}
+
+.result-card.warning .attendee-stamp {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fef3c7;
+}
+
+/* --------------------------------------------------------------------------
+   BARRA DE TESTING / DEMO
+   -------------------------------------------------------------------------- */
+.verificar-tester-bar {
+  margin-top: 2.25rem;
+  background: rgba(9, 11, 40, 0.6);
+  border: 1px dashed rgba(212, 248, 66, 0.3);
+  border-radius: var(--radius-md, 16px);
+  padding: 0.85rem 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.tester-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.tester-title {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--neon-lime, #D4F842);
+}
+
+.tester-param {
+  font-size: 0.72rem;
+  color: var(--text-dim, #94A3B8);
+  font-family: monospace;
+}
+
+.tester-btn {
+  background: rgba(212, 248, 66, 0.15);
+  border: 1px solid rgba(212, 248, 66, 0.35);
+  color: var(--neon-lime, #D4F842);
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-full, 9999px);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: var(--transition-fast);
+}
+
+.tester-btn:hover {
+  background: var(--neon-lime, #D4F842);
+  color: var(--text-dark, #07091F);
+}
+
+/* Responsivo */
+@media (max-width: 480px) {
+  .verificar-card {
+    padding: 1.75rem 1.25rem;
+  }
+  .verificar-title {
+    font-size: 1.5rem;
+  }
+  .attendee-grid {
+    grid-template-columns: 1fr;
+  }
+  .attendee-stamp {
+    grid-column: span 1;
+  }
+  .verificar-tester-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .tester-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
