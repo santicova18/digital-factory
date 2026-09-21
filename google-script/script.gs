@@ -40,13 +40,16 @@ function doPost(e) {
 
   try {
     const role = (payload.role || '').trim();
+    const action = (payload.action || '').trim();
 
-    if (role === 'Aprendiz') {
+    if (action === 'asistencia' || role === 'Asistencia') {
+      return registrarAsistencia(payload);
+    } else if (role === 'Aprendiz') {
       return registrarAprendiz(payload);
     } else if (role === 'Invitado') {
       return registrarInvitado(payload);
     }
-    return jsonResponse({ result: 'error', message: 'Rol de participante no reconocido.' });
+    return jsonResponse({ result: 'error', message: 'Rol o acción de petición no reconocida.' });
   } catch (err) {
     console.error(err);
     return jsonResponse({ result: 'error', message: 'Ocurrió un error interno al procesar el registro.' });
@@ -54,7 +57,138 @@ function doPost(e) {
 }
 
 function doGet(e) {
+  if (e && e.parameter && (e.parameter.action === 'asistencia' || e.parameter.documento || e.parameter.numeroDocumento)) {
+    const payload = {
+      action: 'asistencia',
+      numeroDocumento: e.parameter.documento || e.parameter.numeroDocumento,
+      dia: e.parameter.dia
+    };
+    return registrarAsistencia(payload);
+  }
   return jsonResponse({ result: 'success', message: 'Backend de Bootcamp Digital Factory activo.' });
+}
+
+/* ----------------------------- ASISTENCIA --------------------------------- */
+
+function registrarAsistencia(payload) {
+  const numeroDocumento = limpiar(payload.numeroDocumento || payload.documento);
+  if (!numeroDocumento) {
+    return jsonResponse({ result: 'error', message: 'Por favor ingresa un número de documento válido.' });
+  }
+
+  // Determinar día del Bootcamp (1 o 2)
+  let diaTarget = 'Día 1';
+  if (payload.dia === 2 || payload.dia === '2' || payload.dia === 'Día 2') {
+    diaTarget = 'Día 2';
+  } else if (!payload.dia) {
+    const hoy = new Date();
+    // 23 de septiembre = Día 2, de lo contrario Día 1
+    if (hoy.getMonth() === 8 && hoy.getDate() === 23) {
+      diaTarget = 'Día 2';
+    }
+  }
+
+  // Buscar primero en Aprendices, luego en Invitados
+  const resAprendiz = buscarYMarcarAsistencia_(CONFIG.SHEET_APRENDICES, numeroDocumento, diaTarget);
+  if (resAprendiz.encontrado) {
+    return jsonResponse({
+      result: 'success',
+      nombreCompleto: resAprendiz.nombreCompleto,
+      numeroDocumento: numeroDocumento,
+      rol: 'Aprendiz SENA',
+      ficha: resAprendiz.ficha || 'Aprendiz SENA',
+      dia: diaTarget,
+      yaRegistrado: resAprendiz.yaRegistrado,
+      message: resAprendiz.yaRegistrado
+        ? 'Asistencia ya registrada previamente para el ' + diaTarget + '.'
+        : '¡Asistencia confirmada exitosamente! Se registró "Ok" en Excel para el ' + diaTarget + '.'
+    });
+  }
+
+  const resInvitado = buscarYMarcarAsistencia_(CONFIG.SHEET_INVITADOS, numeroDocumento, diaTarget);
+  if (resInvitado.encontrado) {
+    return jsonResponse({
+      result: 'success',
+      nombreCompleto: resInvitado.nombreCompleto,
+      numeroDocumento: numeroDocumento,
+      rol: 'Invitado',
+      ficha: resInvitado.empresa || 'Invitado',
+      dia: diaTarget,
+      yaRegistrado: resInvitado.yaRegistrado,
+      message: resInvitado.yaRegistrado
+        ? 'Asistencia ya registrada previamente para el ' + diaTarget + '.'
+        : '¡Asistencia confirmada exitosamente! Se registró "Ok" en Excel para el ' + diaTarget + '.'
+    });
+  }
+
+  return jsonResponse({
+    result: 'error',
+    message: 'El número de documento (' + numeroDocumento + ') no se encuentra en la lista de registrados del Bootcamp.'
+  });
+}
+
+function buscarYMarcarAsistencia_(nombreHoja, numeroDocumento, colDiaNombre) {
+  const sheet = getSheet_(nombreHoja, [
+    'Fecha de Registro', 'Número de Ficha', 'Nombre Completo', 'Tipo de Documento',
+    'Número de Documento', 'Centro SENA', 'Correo Electrónico', 'Código QR (contenido)',
+    'Estado del correo', 'Día 1', 'Día 2'
+  ]);
+
+  if (!sheet || sheet.getLastRow() < 2) {
+    return { encontrado: false };
+  }
+
+  const colDoc = columnaEncabezado_(sheet, 'Número de Documento');
+  const colNombre = columnaEncabezado_(sheet, 'Nombre Completo');
+  let colDia = columnaEncabezado_(sheet, colDiaNombre);
+
+  if (colDoc <= 0 || colNombre <= 0) {
+    return { encontrado: false };
+  }
+
+  if (colDia <= 0) {
+    const ultimaCol = sheet.getLastColumn() + 1;
+    sheet.getRange(1, ultimaCol).setValue(colDiaNombre).setFontWeight('bold');
+    colDia = ultimaCol;
+  }
+
+  const lastRow = sheet.getLastRow();
+  const datos = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues();
+  const docLimpio = String(numeroDocumento).replace(/\D/g, '');
+
+  for (let i = 0; i < datos.length; i++) {
+    const docFila = String(datos[i][colDoc - 1]).trim();
+    const docFilaLimpio = docFila.replace(/\D/g, '');
+
+    if (docFila === numeroDocumento || (docLimpio && docLimpio === docFilaLimpio)) {
+      const filaExcel = i + 2;
+      const nombreCompleto = String(datos[i][colNombre - 1]).trim();
+      const valorActualDia = String(datos[i][colDia - 1]).trim();
+
+      const colFicha = columnaEncabezado_(sheet, 'Número de Ficha');
+      const colEmpresa = columnaEncabezado_(sheet, 'Empresa o Entidad');
+      const ficha = colFicha > 0 ? String(datos[i][colFicha - 1]).trim() : '';
+      const empresa = colEmpresa > 0 ? String(datos[i][colEmpresa - 1]).trim() : '';
+
+      let yaRegistrado = false;
+      if (valorActualDia.toLowerCase() === 'ok') {
+        yaRegistrado = true;
+      } else {
+        sheet.getRange(filaExcel, colDia).setValue('Ok');
+        SpreadsheetApp.flush();
+      }
+
+      return {
+        encontrado: true,
+        nombreCompleto: nombreCompleto,
+        ficha: ficha,
+        empresa: empresa,
+        yaRegistrado: yaRegistrado
+      };
+    }
+  }
+
+  return { encontrado: false };
 }
 
 /* ----------------------------- REGISTRO ----------------------------------- */
@@ -85,7 +219,7 @@ function registrarAprendiz(payload) {
   const sheet = getSheet_(CONFIG.SHEET_APRENDICES, [
     'Fecha de Registro', 'Número de Ficha', 'Nombre Completo', 'Tipo de Documento',
     'Número de Documento', 'Centro SENA', 'Correo Electrónico', 'Código QR (contenido)',
-    'Estado del correo'
+    'Estado del correo', 'Día 1', 'Día 2'
   ]);
 
   const colNumeroDocumento = columnaEncabezado_(sheet, 'Número de Documento');
@@ -95,7 +229,7 @@ function registrarAprendiz(payload) {
 
   const qrContenido = tipoDocumento + '-' + numeroDocumento;
   sheet.appendRow([
-    new Date(), numFicha, nombreCompleto, tipoDocumento, numeroDocumento, centro, correo, qrContenido
+    new Date(), numFicha, nombreCompleto, tipoDocumento, numeroDocumento, centro, correo, qrContenido, '', '', ''
   ]);
 
   const resCorreo = enviarCorreoConfirmacion_({
@@ -121,7 +255,6 @@ function registrarInvitado(payload) {
   if (!tipoDocumento) faltantes.push('Tipo de Documento');
   if (!numeroDocumento) faltantes.push('Número de Documento');
   if (!correo) faltantes.push('Correo Electrónico');
-  // La empresa es opcional ("si aplica"), no se exige.
 
   if (faltantes.length) {
     return jsonResponse({ result: 'error', message: 'Faltan datos: ' + faltantes.join(', ') });
@@ -133,7 +266,7 @@ function registrarInvitado(payload) {
   const sheet = getSheet_(CONFIG.SHEET_INVITADOS, [
     'Fecha de Registro', 'Empresa o Entidad', 'Nombre Completo', 'Tipo de Documento',
     'Número de Documento', 'Correo Electrónico', 'Código QR (contenido)',
-    'Estado del correo'
+    'Estado del correo', 'Día 1', 'Día 2'
   ]);
 
   const colNumeroDocumento = columnaEncabezado_(sheet, 'Número de Documento');
@@ -143,7 +276,7 @@ function registrarInvitado(payload) {
 
   const qrContenido = tipoDocumento + '-' + numeroDocumento;
   sheet.appendRow([
-    new Date(), empresa || '(No aplica)', nombreCompleto, tipoDocumento, numeroDocumento, correo, qrContenido
+    new Date(), empresa || '(No aplica)', nombreCompleto, tipoDocumento, numeroDocumento, correo, qrContenido, '', '', ''
   ]);
 
   const resCorreo = enviarCorreoConfirmacion_({
@@ -160,16 +293,7 @@ function registrarInvitado(payload) {
 /* ------------------------------- CORREO + QR ------------------------------- */
 
 function enviarCorreoConfirmacion_(datos) {
-  // El QR codifica "TIPO-NUMERO_DE_DOCUMENTO" en vez de un ID interno
-  // consecutivo, para que no se puedan adivinar ni enumerar otros registros.
   const qrContenido = datos.qrContenido;
-
-  // El QR se referencia por URL remota (<img src="https://...">) usando el
-  // propio endpoint del generador. Es el mecanismo que los clientes muestran
-  // DENTRO del cuerpo del correo (Gmail, Outlook, móviles) y que NUNCA termina
-  // como archivo adjunto. Solo si ambos proveedores fallaran en el momento del
-  // envío se usa el respaldo "inlineImages + cid" (en Outlook ese respaldo
-  // puede listarse como adjunto, por eso es la última opción).
   const urlQr = urlQRRemota_(qrContenido);
 
   let imgQrHtml = '';
@@ -212,13 +336,11 @@ function enviarCorreoConfirmacion_(datos) {
     opciones.inlineImages = { qrAcceso: qrCidBlob };
   }
 
-  // El resultado de la entrega se reporta para que el frontend y la hoja
-  // puedan avisar si el correo o el QR no pudieron generarse/despacharse.
   try {
     GmailApp.sendEmail(
       datos.correo,
       asunto,
-      'Tu inscripción fue confirmada. Abre este correo en un cliente compatible con HTML (o descarga las imágenes) para ver tu código QR de acceso.',
+      'Tu inscripción fue confirmada. Abre este correo en un cliente compatible con HTML para ver tu código QR de acceso.',
       opciones
     );
     const metodo = urlQr ? 'QR remoto en el cuerpo' : (qrCidBlob ? 'QR inline (cid) de respaldo' : 'SIN QR');
@@ -230,8 +352,6 @@ function enviarCorreoConfirmacion_(datos) {
   }
 }
 
-// Devuelve la URL del endpoint de generación que responde correctamente en el
-// momento del envío (así el QR por URL funciona y no queda en adjunto).
 function urlQRRemota_(contenido) {
   const proveedores = [
     'https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=12&data=' + encodeURIComponent(contenido),
@@ -289,8 +409,6 @@ function getSheet_(nombre, encabezados) {
     sheet.setFrozenRows(1);
     return sheet;
   }
-  // Migración segura: agrega al final los encabezados nuevos que falten en
-  // hojas ya existentes, SIN tocar los datos ya guardados.
   const existentes = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0]
     .map(function (v) { return String(v).trim(); });
   let colNueva = sheet.getLastColumn() + 1;
@@ -362,17 +480,17 @@ function jsonResponse(obj) {
 /**
  * Ejecuta esta función UNA sola vez desde el editor de Apps Script
  * (menú "Ejecutar" > seleccionar "setupSheets") para crear ambas hojas
- * con sus encabezados antes de desplegar la aplicación web.
+ * con sus 2 columnas de asistencia (Día 1 y Día 2).
  */
 function setupSheets() {
   getSheet_(CONFIG.SHEET_APRENDICES, [
     'Fecha de Registro', 'Número de Ficha', 'Nombre Completo', 'Tipo de Documento',
     'Número de Documento', 'Centro SENA', 'Correo Electrónico', 'Código QR (contenido)',
-    'Estado del correo'
+    'Estado del correo', 'Día 1', 'Día 2'
   ]);
   getSheet_(CONFIG.SHEET_INVITADOS, [
     'Fecha de Registro', 'Empresa o Entidad', 'Nombre Completo', 'Tipo de Documento',
     'Número de Documento', 'Correo Electrónico', 'Código QR (contenido)',
-    'Estado del correo'
+    'Estado del correo', 'Día 1', 'Día 2'
   ]);
-}
+}

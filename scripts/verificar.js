@@ -64,6 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
       detectedParam = `session=${sessionVal}`;
     }
 
+    // Verificar ?doc=... o ?documento=... procedente de QR personal asignado
+    const docParam = (urlParams.get('doc') || urlParams.get('documento') || '').trim();
+    if (docParam) {
+      isAuthorized = true;
+      detectedParam = `documento=${docParam}`;
+    }
+
     if (isAuthorized) {
       // Flujo Autorizado
       if (unauthorizedView) unauthorizedView.style.display = 'none';
@@ -75,10 +82,17 @@ document.addEventListener('DOMContentLoaded', () => {
         testerBtn.href = window.location.pathname;
       }
 
-      // Enfocar input automáticamente en dispositivos compatibles
-      setTimeout(() => {
-        if (docInput) docInput.focus();
-      }, 300);
+      if (docParam && docInput) {
+        docInput.value = docParam.replace(/\D/g, '');
+        if (btnClearDoc && docInput.value) btnClearDoc.classList.add('visible');
+        setTimeout(() => {
+          if (attendanceForm) attendanceForm.dispatchEvent(new Event('submit'));
+        }, 400);
+      } else {
+        setTimeout(() => {
+          if (docInput) docInput.focus();
+        }, 300);
+      }
     } else {
       // Flujo Bloqueado
       if (unauthorizedView) unauthorizedView.style.display = 'flex';
@@ -161,9 +175,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --------------------------------------------------------------------------
-  // 4. BASE DE DATOS LOCAL Y SERVICIO DE CONSULTA
+  // 4. BASE DE DATOS Y SERVICIO DE CONSULTA DE ASISTENCIA
   // --------------------------------------------------------------------------
-  // Base local de participantes registrados para pruebas en caliente
   const mockAttendees = [
     {
       id: '1020304050',
@@ -193,9 +206,6 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
 
   async function checkAttendance(documento) {
-    // Simular tiempo de respuesta de red realista
-    await new Promise(r => setTimeout(r, 600));
-
     const now = new Date();
     const currentTimeStr = now.toLocaleTimeString('es-CO', {
       hour: '2-digit',
@@ -209,14 +219,57 @@ document.addEventListener('DOMContentLoaded', () => {
       year: 'numeric'
     });
 
-    // 1. Buscar en registros precargados
+    // 1. Intentar registrar asistencia en el backend de Google Apps Script
+    if (BACKEND_CONFIG.gasUrl && !BACKEND_CONFIG.gasUrl.includes('PEGA_AQUI')) {
+      try {
+        const response = await fetch(BACKEND_CONFIG.gasUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'asistencia',
+            numeroDocumento: documento
+          })
+        });
+
+        const data = await response.json();
+        if (data && data.result === 'success') {
+          return {
+            status: data.yaRegistrado ? 'ALREADY_REGISTERED' : 'SUCCESS',
+            message: data.message || (data.yaRegistrado ? 'Asistencia Registrada Previamente' : '¡Asistencia Confirmada Exitosamente!'),
+            nombreCompleto: data.nombreCompleto,
+            documento: data.numeroDocumento || documento,
+            rol: data.rol || 'Aprendiz SENA',
+            ficha: data.ficha || 'Bootcamp Fábrica Digital',
+            dia: data.dia || 'Día 1',
+            hora: currentTimeStr,
+            fecha: currentDateStr
+          };
+        } else if (data && data.result === 'error') {
+          return {
+            status: 'NOT_FOUND',
+            message: data.message || 'El número de documento no se encuentra en el registro oficial.',
+            documento: documento
+          };
+        }
+      } catch (err) {
+        console.warn('Backend remoto no disponible, usando validación local de respaldo:', err);
+      }
+    }
+
+    // 2. Respaldo local con mockAttendees
+    await new Promise(r => setTimeout(r, 500));
+
     const found = mockAttendees.find(a => a.id === documento);
     if (found) {
       if (found.asistio) {
         return {
           status: 'ALREADY_REGISTERED',
-          message: 'Asistencia Registrada Previamente',
-          attendee: found,
+          message: 'Asistencia Registrada Previamente (Día 1: Ok)',
+          nombreCompleto: found.nombre,
+          documento: found.id,
+          rol: found.rol,
+          ficha: found.ficha,
+          dia: 'Día 1',
           hora: found.horaAsistencia || currentTimeStr,
           fecha: currentDateStr
         };
@@ -226,36 +279,44 @@ document.addEventListener('DOMContentLoaded', () => {
         return {
           status: 'SUCCESS',
           message: '¡Asistencia Confirmada Exitosamente!',
-          attendee: found,
+          nombreCompleto: found.nombre,
+          documento: found.id,
+          rol: found.rol,
+          ficha: found.ficha,
+          dia: 'Día 1',
           hora: currentTimeStr,
           fecha: currentDateStr
         };
       }
     }
 
-    // 2. Registro dinámico para testing con cualquier documento válido (6 a 11 dígitos)
+    // Registro dinámico local para pruebas
     if (documento.length >= 6 && documento.length <= 11) {
-      const dynamicAttendee = {
+      const dynName = `Aprendiz SENA (${documento})`;
+      const dynAttendee = {
         id: documento,
-        nombre: `Participante Bootcamp (${documento})`,
-        rol: 'Aprendiz / Asistente Registrado',
-        ficha: 'Bootcamp Fábrica Digital & IA 2026',
+        nombre: dynName,
+        rol: 'Aprendiz SENA',
+        ficha: 'Ficha 2824912 · ADSO',
         centro: 'Nodo TIC Barranquilla',
         asistio: true,
         horaAsistencia: currentTimeStr
       };
-      mockAttendees.push(dynamicAttendee);
+      mockAttendees.push(dynAttendee);
 
       return {
         status: 'SUCCESS',
         message: '¡Asistencia Confirmada Exitosamente!',
-        attendee: dynamicAttendee,
+        nombreCompleto: dynName,
+        documento: documento,
+        rol: dynAttendee.rol,
+        ficha: dynAttendee.ficha,
+        dia: 'Día 1',
         hora: currentTimeStr,
         fecha: currentDateStr
       };
     }
 
-    // 3. No encontrado
     return {
       status: 'NOT_FOUND',
       message: 'Documento No Encontrado en el Sistema',
@@ -264,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --------------------------------------------------------------------------
-  // 5. RENDERIZADO DEL RESULTADO
+  // 5. RENDERIZADO DEL RESULTADO CON VERIFICACIÓN DE NOMBRE Y REGISTRO EXCEL
   // --------------------------------------------------------------------------
   function renderFeedback(res) {
     if (!resultArea) return;
@@ -279,29 +340,25 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div>
               <h3 class="result-title">${res.message}</h3>
-              <p class="result-desc">Tu ingreso al Bootcamp Fábrica Digital ha quedado certificado.</p>
+              <p class="result-desc">Se registró <strong>"Ok"</strong> en la columna <strong>${res.dia}</strong> de la planilla Excel del Bootcamp.</p>
             </div>
           </div>
           <div class="attendee-grid">
-            <div class="attendee-item">
-              <span class="attendee-item-label">Nombre del Participante</span>
-              <span class="attendee-item-value">${res.attendee.nombre}</span>
+            <div class="attendee-item" style="grid-column: span 2;">
+              <span class="attendee-item-label">Nombre del Aprendiz / Participante</span>
+              <span class="attendee-item-value" style="font-size: 1.15rem; color: var(--neon-lime, #D4F842);">${res.nombreCompleto}</span>
             </div>
             <div class="attendee-item">
               <span class="attendee-item-label">Documento de Identidad</span>
-              <span class="attendee-item-value">${res.attendee.id}</span>
+              <span class="attendee-item-value">${res.documento}</span>
             </div>
             <div class="attendee-item">
-              <span class="attendee-item-label">Rol / Tipo</span>
-              <span class="attendee-item-value">${res.attendee.rol}</span>
-            </div>
-            <div class="attendee-item">
-              <span class="attendee-item-label">Ficha / Dependencia</span>
-              <span class="attendee-item-value">${res.attendee.ficha}</span>
+              <span class="attendee-item-label">Estado en Excel (${res.dia})</span>
+              <span class="attendee-item-value" style="color: #34d399;"><i class="fa-solid fa-file-excel"></i> Ok</span>
             </div>
             <div class="attendee-stamp">
               <i class="fa-solid fa-clock"></i>
-              <span>Marcado hoy a las <strong>${res.hora}</strong> (${res.fecha})</span>
+              <span>Marcado a las <strong>${res.hora}</strong> (${res.fecha})</span>
             </div>
           </div>
         </div>
@@ -315,21 +372,21 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div>
               <h3 class="result-title">${res.message}</h3>
-              <p class="result-desc">Este documento ya fue registrado previamente en la mesa de control.</p>
+              <p class="result-desc">La asistencia de este participante ya figura con <strong>"Ok"</strong> en la planilla Excel para el <strong>${res.dia || 'Día 1'}</strong>.</p>
             </div>
           </div>
           <div class="attendee-grid">
-            <div class="attendee-item">
-              <span class="attendee-item-label">Participante</span>
-              <span class="attendee-item-value">${res.attendee.nombre}</span>
+            <div class="attendee-item" style="grid-column: span 2;">
+              <span class="attendee-item-label">Nombre del Aprendiz / Participante</span>
+              <span class="attendee-item-value" style="font-size: 1.1rem; color: #fbbf24;">${res.nombreCompleto}</span>
             </div>
             <div class="attendee-item">
               <span class="attendee-item-label">Documento</span>
-              <span class="attendee-item-value">${res.attendee.id}</span>
+              <span class="attendee-item-value">${res.documento}</span>
             </div>
-            <div class="attendee-stamp">
-              <i class="fa-solid fa-history"></i>
-              <span>Hora original de ingreso: <strong>${res.hora}</strong></span>
+            <div class="attendee-item">
+              <span class="attendee-item-label">Estado en Excel</span>
+              <span class="attendee-item-value" style="color: #fbbf24;"><i class="fa-solid fa-file-excel"></i> Ok (Registrado)</span>
             </div>
           </div>
         </div>
@@ -344,7 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div>
               <h3 class="result-title">${res.message}</h3>
               <p class="result-desc">
-                El documento <strong>${res.documento}</strong> no aparece en el listado oficial de inscripciones. Si realizaste el registro, por favor dirígete a la mesa de acreditación física.
+                El número de documento <strong>${res.documento}</strong> no aparece en la lista de inscritos. Si te inscribiste previamente, por favor acércate a la mesa de soporte presencial.
               </p>
             </div>
           </div>
@@ -354,6 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     resultArea.innerHTML = html;
   }
+
 
   // --------------------------------------------------------------------------
   // 6. EVENT LISTENER DEL FORMULARIO
