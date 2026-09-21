@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
             documento: data.numeroDocumento || documento,
             rol: data.rol || 'Aprendiz SENA',
             ficha: data.ficha || 'Bootcamp Fábrica Digital',
-            dia: data.dia || 'Día 1',
+            dia: data.dia || '22 de Septiembre',
             hora: currentTimeStr,
             fecha: currentDateStr
           };
@@ -264,12 +264,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (found.asistio) {
         return {
           status: 'ALREADY_REGISTERED',
-          message: 'Asistencia Registrada Previamente (Día 1: Ok)',
+          message: 'Asistencia Registrada Previamente (22 de Septiembre: Ok)',
           nombreCompleto: found.nombre,
           documento: found.id,
           rol: found.rol,
           ficha: found.ficha,
-          dia: 'Día 1',
+          dia: '22 de Septiembre',
           hora: found.horaAsistencia || currentTimeStr,
           fecha: currentDateStr
         };
@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
           documento: found.id,
           rol: found.rol,
           ficha: found.ficha,
-          dia: 'Día 1',
+          dia: '22 de Septiembre',
           hora: currentTimeStr,
           fecha: currentDateStr
         };
@@ -311,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
         documento: documento,
         rol: dynAttendee.rol,
         ficha: dynAttendee.ficha,
-        dia: 'Día 1',
+        dia: '22 de Septiembre',
         hora: currentTimeStr,
         fecha: currentDateStr
       };
@@ -372,7 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div>
               <h3 class="result-title">${res.message}</h3>
-              <p class="result-desc">La asistencia de este participante ya figura con <strong>"Ok"</strong> en la planilla Excel para el <strong>${res.dia || 'Día 1'}</strong>.</p>
+              <p class="result-desc">La asistencia de este participante ya figura con <strong>"Ok"</strong> en la planilla Excel para el <strong>${res.dia || '22 de Septiembre'}</strong>.</p>
             </div>
           </div>
           <div class="attendee-grid">

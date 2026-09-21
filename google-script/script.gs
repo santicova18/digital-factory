@@ -76,15 +76,15 @@ function registrarAsistencia(payload) {
     return jsonResponse({ result: 'error', message: 'Por favor ingresa un número de documento válido.' });
   }
 
-  // Determinar día del Bootcamp (1 o 2)
-  let diaTarget = 'Día 1';
-  if (payload.dia === 2 || payload.dia === '2' || payload.dia === 'Día 2') {
-    diaTarget = 'Día 2';
+  // Determinar día del Bootcamp según las fechas (22 y 23 de Septiembre)
+  let diaTarget = '22 de Septiembre';
+  if (payload.dia === 2 || payload.dia === '2' || payload.dia === 'Día 2' || payload.dia === '23 de Septiembre') {
+    diaTarget = '23 de Septiembre';
   } else if (!payload.dia) {
     const hoy = new Date();
-    // 23 de septiembre = Día 2, de lo contrario Día 1
+    // Si la fecha actual es 23 de septiembre = 23 de Septiembre
     if (hoy.getMonth() === 8 && hoy.getDate() === 23) {
-      diaTarget = 'Día 2';
+      diaTarget = '23 de Septiembre';
     }
   }
 
@@ -100,7 +100,7 @@ function registrarAsistencia(payload) {
       dia: diaTarget,
       yaRegistrado: resAprendiz.yaRegistrado,
       message: resAprendiz.yaRegistrado
-        ? 'Asistencia ya registrada previamente para el ' + diaTarget + '.'
+        ? 'Asistencia ya registrada previamente para la jornada del ' + diaTarget + '.'
         : '¡Asistencia confirmada exitosamente! Se registró "Ok" en Excel para el ' + diaTarget + '.'
     });
   }
@@ -116,7 +116,7 @@ function registrarAsistencia(payload) {
       dia: diaTarget,
       yaRegistrado: resInvitado.yaRegistrado,
       message: resInvitado.yaRegistrado
-        ? 'Asistencia ya registrada previamente para el ' + diaTarget + '.'
+        ? 'Asistencia ya registrada previamente para la jornada del ' + diaTarget + '.'
         : '¡Asistencia confirmada exitosamente! Se registró "Ok" en Excel para el ' + diaTarget + '.'
     });
   }
@@ -131,7 +131,7 @@ function buscarYMarcarAsistencia_(nombreHoja, numeroDocumento, colDiaNombre) {
   const sheet = getSheet_(nombreHoja, [
     'Fecha de Registro', 'Número de Ficha', 'Nombre Completo', 'Tipo de Documento',
     'Número de Documento', 'Centro SENA', 'Correo Electrónico', 'Código QR (contenido)',
-    'Estado del correo', 'Día 1', 'Día 2'
+    'Estado del correo', '22 de Septiembre', '23 de Septiembre'
   ]);
 
   if (!sheet || sheet.getLastRow() < 2) {
@@ -219,7 +219,7 @@ function registrarAprendiz(payload) {
   const sheet = getSheet_(CONFIG.SHEET_APRENDICES, [
     'Fecha de Registro', 'Número de Ficha', 'Nombre Completo', 'Tipo de Documento',
     'Número de Documento', 'Centro SENA', 'Correo Electrónico', 'Código QR (contenido)',
-    'Estado del correo', 'Día 1', 'Día 2'
+    'Estado del correo', '22 de Septiembre', '23 de Septiembre'
   ]);
 
   const colNumeroDocumento = columnaEncabezado_(sheet, 'Número de Documento');
@@ -266,7 +266,7 @@ function registrarInvitado(payload) {
   const sheet = getSheet_(CONFIG.SHEET_INVITADOS, [
     'Fecha de Registro', 'Empresa o Entidad', 'Nombre Completo', 'Tipo de Documento',
     'Número de Documento', 'Correo Electrónico', 'Código QR (contenido)',
-    'Estado del correo', 'Día 1', 'Día 2'
+    'Estado del correo', '22 de Septiembre', '23 de Septiembre'
   ]);
 
   const colNumeroDocumento = columnaEncabezado_(sheet, 'Número de Documento');
@@ -480,17 +480,17 @@ function jsonResponse(obj) {
 /**
  * Ejecuta esta función UNA sola vez desde el editor de Apps Script
  * (menú "Ejecutar" > seleccionar "setupSheets") para crear ambas hojas
- * con sus 2 columnas de asistencia (Día 1 y Día 2).
+ * con sus 2 columnas de asistencia (22 de Septiembre y 23 de Septiembre).
  */
 function setupSheets() {
   getSheet_(CONFIG.SHEET_APRENDICES, [
     'Fecha de Registro', 'Número de Ficha', 'Nombre Completo', 'Tipo de Documento',
     'Número de Documento', 'Centro SENA', 'Correo Electrónico', 'Código QR (contenido)',
-    'Estado del correo', 'Día 1', 'Día 2'
+    'Estado del correo', '22 de Septiembre', '23 de Septiembre'
   ]);
   getSheet_(CONFIG.SHEET_INVITADOS, [
     'Fecha de Registro', 'Empresa o Entidad', 'Nombre Completo', 'Tipo de Documento',
     'Número de Documento', 'Correo Electrónico', 'Código QR (contenido)',
-    'Estado del correo', 'Día 1', 'Día 2'
+    'Estado del correo', '22 de Septiembre', '23 de Septiembre'
   ]);
-}
+}
