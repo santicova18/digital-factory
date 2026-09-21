@@ -320,62 +320,36 @@ document.addEventListener('DOMContentLoaded', () => {
     let html = '';
     const nombreVisual = res.nombreCompleto || res.nombre || (res.attendee && res.attendee.nombre) || `Aprendiz SENA (${res.documento || ''})`;
 
-    if (res.status === 'SUCCESS') {
+    if (res.status === 'SUCCESS' || res.status === 'ALREADY_REGISTERED') {
+      const isSuccess = res.status === 'SUCCESS';
+      const badgeClass = isSuccess ? 'success' : 'warning';
+      const iconClass = isSuccess ? 'fa-check' : 'fa-clock';
+      const nameColor = isSuccess ? 'var(--neon-lime, #D4F842)' : '#fbbf24';
+      const mainTitle = isSuccess ? '¡Asistencia Confirmada!' : 'Asistencia Registrada Previamente';
+
       html = `
-        <div class="result-card success" role="alert">
+        <div class="result-card ${badgeClass}" role="alert">
           <div class="result-card-header">
             <div class="result-icon-badge">
-              <i class="fa-solid fa-check"></i>
+              <i class="fa-solid ${iconClass}"></i>
             </div>
             <div>
-              <h3 class="result-title">${res.message}</h3>
-              <p class="result-desc">Se registró <strong>"Ok"</strong> en la columna <strong>${res.dia}</strong> de la planilla Excel del Bootcamp.</p>
+              <h3 class="result-title">${mainTitle}</h3>
+              <p class="result-desc">Jornada del ${res.dia || '22 de Septiembre'}</p>
             </div>
           </div>
           <div class="attendee-grid">
             <div class="attendee-item" style="grid-column: span 2;">
               <span class="attendee-item-label">Nombre del Aprendiz / Participante</span>
-              <span class="attendee-item-value" style="font-size: 1.15rem; color: var(--neon-lime, #D4F842);">${nombreVisual}</span>
+              <span class="attendee-item-value" style="font-size: 1.15rem; color: ${nameColor};">${nombreVisual}</span>
             </div>
-            <div class="attendee-item">
+            <div class="attendee-item" style="grid-column: span 2;">
               <span class="attendee-item-label">Documento de Identidad</span>
               <span class="attendee-item-value">${res.documento}</span>
-            </div>
-            <div class="attendee-item">
-              <span class="attendee-item-label">Estado en Excel (${res.dia})</span>
-              <span class="attendee-item-value" style="color: #34d399;"><i class="fa-solid fa-file-excel"></i> Ok</span>
             </div>
             <div class="attendee-stamp">
               <i class="fa-solid fa-clock"></i>
               <span>Marcado a las <strong>${res.hora}</strong> (${res.fecha})</span>
-            </div>
-          </div>
-        </div>
-      `;
-    } else if (res.status === 'ALREADY_REGISTERED') {
-      html = `
-        <div class="result-card warning" role="alert">
-          <div class="result-card-header">
-            <div class="result-icon-badge">
-              <i class="fa-solid fa-triangle-exclamation"></i>
-            </div>
-            <div>
-              <h3 class="result-title">${res.message}</h3>
-              <p class="result-desc">La asistencia de este participante ya figura con <strong>"Ok"</strong> en la planilla Excel para el <strong>${res.dia || '22 de Septiembre'}</strong>.</p>
-            </div>
-          </div>
-          <div class="attendee-grid">
-            <div class="attendee-item" style="grid-column: span 2;">
-              <span class="attendee-item-label">Nombre del Aprendiz / Participante</span>
-              <span class="attendee-item-value" style="font-size: 1.1rem; color: #fbbf24;">${nombreVisual}</span>
-            </div>
-            <div class="attendee-item">
-              <span class="attendee-item-label">Documento</span>
-              <span class="attendee-item-value">${res.documento}</span>
-            </div>
-            <div class="attendee-item">
-              <span class="attendee-item-label">Estado en Excel</span>
-              <span class="attendee-item-value" style="color: #fbbf24;"><i class="fa-solid fa-file-excel"></i> Ok (Registrado)</span>
             </div>
           </div>
         </div>
@@ -388,7 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <i class="fa-solid fa-xmark"></i>
             </div>
             <div>
-              <h3 class="result-title">${res.message}</h3>
+              <h3 class="result-title">Documento No Encontrado</h3>
               <p class="result-desc">
                 El número de documento <strong>${res.documento}</strong> no aparece en la lista de inscritos. Si te inscribiste previamente, por favor acércate a la mesa de soporte presencial.
               </p>

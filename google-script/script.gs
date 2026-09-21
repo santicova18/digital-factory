@@ -100,8 +100,8 @@ function registrarAsistencia(payload) {
       dia: diaTarget,
       yaRegistrado: resAprendiz.yaRegistrado,
       message: resAprendiz.yaRegistrado
-        ? 'Asistencia ya registrada previamente para la jornada del ' + diaTarget + '.'
-        : '¡Asistencia confirmada exitosamente! Se registró "Ok" en Excel para el ' + diaTarget + '.'
+        ? 'Asistencia Registrada Previamente'
+        : '¡Asistencia Confirmada!'
     });
   }
 
@@ -116,8 +116,8 @@ function registrarAsistencia(payload) {
       dia: diaTarget,
       yaRegistrado: resInvitado.yaRegistrado,
       message: resInvitado.yaRegistrado
-        ? 'Asistencia ya registrada previamente para la jornada del ' + diaTarget + '.'
-        : '¡Asistencia confirmada exitosamente! Se registró "Ok" en Excel para el ' + diaTarget + '.'
+        ? 'Asistencia Registrada Previamente'
+        : '¡Asistencia Confirmada!'
     });
   }
 
