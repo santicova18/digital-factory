@@ -507,56 +507,6 @@
   color: #fef3c7;
 }
 
-/* --------------------------------------------------------------------------
-   BARRA DE TESTING / DEMO
-   -------------------------------------------------------------------------- */
-.verificar-tester-bar {
-  margin-top: 2.25rem;
-  background: rgba(9, 11, 40, 0.6);
-  border: 1px dashed rgba(212, 248, 66, 0.3);
-  border-radius: var(--radius-md, 16px);
-  padding: 0.85rem 1.15rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.tester-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.tester-title {
-  font-size: 0.76rem;
-  font-weight: 700;
-  color: var(--neon-lime, #D4F842);
-}
-
-.tester-param {
-  font-size: 0.72rem;
-  color: var(--text-dim, #94A3B8);
-  font-family: monospace;
-}
-
-.tester-btn {
-  background: rgba(212, 248, 66, 0.15);
-  border: 1px solid rgba(212, 248, 66, 0.35);
-  color: var(--neon-lime, #D4F842);
-  padding: 0.45rem 0.85rem;
-  border-radius: var(--radius-full, 9999px);
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: var(--transition-fast);
-}
-
-.tester-btn:hover {
-  background: var(--neon-lime, #D4F842);
-  color: var(--text-dark, #07091F);
-}
-
 /* Responsivo */
 @media (max-width: 480px) {
   .verificar-card {
@@ -570,13 +520,5 @@
   }
   .attendee-stamp {
     grid-column: span 1;
-  }
-  .verificar-tester-bar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .tester-btn {
-    width: 100%;
-    text-align: center;
   }
 }

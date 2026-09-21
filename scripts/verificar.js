@@ -30,11 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const docErrorText = document.getElementById('docErrorText');
   const resultArea = document.getElementById('resultArea');
 
-  // Barra de pruebas rápidas
-  const testerBar = document.getElementById('testerBar');
-  const testerParam = document.getElementById('testerParam');
-  const testerBtn = document.getElementById('testerBtn');
-
   // --------------------------------------------------------------------------
   // 2. CONTROL DE ACCESO EXCLUSIVO POR URL (QR GATE)
   // --------------------------------------------------------------------------
@@ -76,12 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (unauthorizedView) unauthorizedView.style.display = 'none';
       if (verificationView) verificationView.style.display = 'block';
 
-      if (testerParam) testerParam.textContent = `Parámetro: ${detectedParam}`;
-      if (testerBtn) {
-        testerBtn.textContent = 'Simular Sin QR (Acceso Bloqueado)';
-        testerBtn.href = window.location.pathname;
-      }
-
       if (docParam && docInput) {
         docInput.value = docParam.replace(/\D/g, '');
         if (btnClearDoc && docInput.value) btnClearDoc.classList.add('visible');
@@ -97,12 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
       // Flujo Bloqueado
       if (unauthorizedView) unauthorizedView.style.display = 'flex';
       if (verificationView) verificationView.style.display = 'none';
-
-      if (testerParam) testerParam.textContent = 'Parámetro: Ninguno (acceso raíz)';
-      if (testerBtn) {
-        testerBtn.textContent = 'Simular Escaneo QR (?access=qr)';
-        testerBtn.href = `${window.location.pathname}?access=qr`;
-      }
     }
 
     return isAuthorized;
