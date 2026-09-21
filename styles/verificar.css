@@ -507,6 +507,44 @@
   color: #fef3c7;
 }
 
+/* Selector de Jornadas / Días */
+.day-selector-group {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1.15rem;
+}
+
+.btn-day-tab {
+  flex: 1;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-md, 12px);
+  background: rgba(9, 11, 40, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--text-muted, #CBD5E1);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  transition: var(--transition-fast);
+}
+
+.btn-day-tab:hover {
+  border-color: rgba(212, 248, 66, 0.5);
+  color: #fff;
+  background: rgba(14, 18, 56, 0.9);
+}
+
+.btn-day-tab.active {
+  background: rgba(212, 248, 66, 0.16);
+  border-color: var(--neon-lime, #D4F842);
+  color: var(--neon-lime, #D4F842);
+  box-shadow: 0 0 16px rgba(212, 248, 66, 0.22);
+}
+
 /* Responsivo */
 @media (max-width: 480px) {
   .verificar-card {
@@ -520,5 +558,8 @@
   }
   .attendee-stamp {
     grid-column: span 1;
+  }
+  .day-selector-group {
+    flex-direction: column;
   }
 }

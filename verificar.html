@@ -101,12 +101,22 @@
         <div class="verificar-header">
           <div class="status-badge-qr">
             <span class="status-badge-dot" aria-hidden="true"></span>
-            <span>Escaneo QR Verificado • Sesión Activa</span>
+            <span id="dayBadgeText">Escaneo QR Verificado • 22 de Septiembre</span>
           </div>
-          <h1 class="verificar-title">Verificación de Asistencia</h1>
+          <h1 class="verificar-title" id="verificarTitle">Registro de Asistencia</h1>
           <p class="verificar-desc">
-            Ingresa tu documento de identidad para validar tu inscripción y confirmar tu asistencia a la jornada de hoy.
+            Ingresa tu documento de identidad para validar tu inscripción y confirmar tu asistencia.
           </p>
+
+          <!-- Selector de Jornada / Día -->
+          <div class="day-selector-group" id="daySelectorGroup">
+            <button type="button" id="btnDia22" class="btn-day-tab active" data-dia="22 de Septiembre">
+              <i class="fa-regular fa-calendar-check"></i> 22 de Septiembre
+            </button>
+            <button type="button" id="btnDia23" class="btn-day-tab" data-dia="23 de Septiembre">
+              <i class="fa-regular fa-calendar-check"></i> 23 de Septiembre
+            </button>
+          </div>
         </div>
 
         <!-- Formulario con UN SOLO CAMPO -->

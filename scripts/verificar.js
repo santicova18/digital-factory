@@ -29,6 +29,34 @@ document.addEventListener('DOMContentLoaded', () => {
   const docErrorFeedback = document.getElementById('docErrorFeedback');
   const docErrorText = document.getElementById('docErrorText');
   const resultArea = document.getElementById('resultArea');
+  const dayBadgeText = document.getElementById('dayBadgeText');
+  const btnDia22 = document.getElementById('btnDia22');
+  const btnDia23 = document.getElementById('btnDia23');
+
+  // Estado del día seleccionado (22 de Septiembre o 23 de Septiembre)
+  let currentSelectedDay = '22 de Septiembre';
+
+  function setSelectedDay(dayName) {
+    if (dayName === '23 de Septiembre' || dayName === '23' || dayName === '2') {
+      currentSelectedDay = '23 de Septiembre';
+      if (btnDia22) btnDia22.classList.remove('active');
+      if (btnDia23) btnDia23.classList.add('active');
+    } else {
+      currentSelectedDay = '22 de Septiembre';
+      if (btnDia22) btnDia22.classList.add('active');
+      if (btnDia23) btnDia23.classList.remove('active');
+    }
+    if (dayBadgeText) {
+      dayBadgeText.textContent = `Escaneo QR Verificado • ${currentSelectedDay}`;
+    }
+  }
+
+  if (btnDia22) {
+    btnDia22.addEventListener('click', () => setSelectedDay('22 de Septiembre'));
+  }
+  if (btnDia23) {
+    btnDia23.addEventListener('click', () => setSelectedDay('23 de Septiembre'));
+  }
 
   // --------------------------------------------------------------------------
   // 2. CONTROL DE ACCESO EXCLUSIVO POR URL (QR GATE)
@@ -37,6 +65,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     let isAuthorized = false;
     let detectedParam = null;
+
+    // Detectar día especificado en URL (?dia=22, ?dia=23, ?day=1, ?day=2)
+    const rawDia = (urlParams.get('dia') || urlParams.get('day') || urlParams.get('jornada') || '').trim();
+    if (rawDia === '23' || rawDia === '2' || rawDia.includes('23')) {
+      setSelectedDay('23 de Septiembre');
+    } else if (rawDia === '22' || rawDia === '1' || rawDia.includes('22')) {
+      setSelectedDay('22 de Septiembre');
+    }
 
     // Verificar ?access=qr
     const accessVal = (urlParams.get('access') || '').trim().toLowerCase();
@@ -210,7 +246,8 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({
             action: 'asistencia',
-            numeroDocumento: documento
+            numeroDocumento: documento,
+            dia: currentSelectedDay
           })
         });
 
@@ -219,13 +256,13 @@ document.addEventListener('DOMContentLoaded', () => {
           const resolvedName = data.nombreCompleto || data.nombre || data.Nombre || `Aprendiz SENA (${documento})`;
           return {
             status: data.yaRegistrado ? 'ALREADY_REGISTERED' : 'SUCCESS',
-            message: data.message || (data.yaRegistrado ? 'Asistencia Registrada Previamente' : '¡Asistencia Confirmada Exitosamente!'),
+            message: data.message || (data.yaRegistrado ? 'Asistencia Registrada Previamente' : '¡Asistencia Confirmada!'),
             nombreCompleto: resolvedName,
             nombre: resolvedName,
             documento: data.numeroDocumento || documento,
             rol: data.rol || 'Aprendiz SENA',
             ficha: data.ficha || 'Bootcamp Fábrica Digital',
-            dia: data.dia || '22 de Septiembre',
+            dia: data.dia || currentSelectedDay,
             hora: currentTimeStr,
             fecha: currentDateStr
           };

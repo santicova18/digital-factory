@@ -76,13 +76,15 @@ function registrarAsistencia(payload) {
     return jsonResponse({ result: 'error', message: 'Por favor ingresa un número de documento válido.' });
   }
 
-  // Determinar día del Bootcamp según las fechas (22 y 23 de Septiembre)
+  // Determinar día del Bootcamp (22 de Septiembre o 23 de Septiembre)
   let diaTarget = '22 de Septiembre';
-  if (payload.dia === 2 || payload.dia === '2' || payload.dia === 'Día 2' || payload.dia === '23 de Septiembre') {
+  const diaParam = String(payload.dia || '').trim().toLowerCase();
+  if (diaParam === '23' || diaParam === '2' || diaParam.includes('23')) {
     diaTarget = '23 de Septiembre';
+  } else if (diaParam === '22' || diaParam === '1' || diaParam.includes('22')) {
+    diaTarget = '22 de Septiembre';
   } else if (!payload.dia) {
     const hoy = new Date();
-    // Si la fecha actual es 23 de septiembre = 23 de Septiembre
     if (hoy.getMonth() === 8 && hoy.getDate() === 23) {
       diaTarget = '23 de Septiembre';
     }
