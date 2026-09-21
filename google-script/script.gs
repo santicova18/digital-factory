@@ -161,9 +161,9 @@ function buscarYMarcarAsistencia_(nombreHoja, numeroDocumento, colDiaNombre) {
     const docFilaLimpio = docFila.replace(/\D/g, '');
 
     if (docFila === numeroDocumento || (docLimpio && docLimpio === docFilaLimpio)) {
-      const filaExcel = i + 2;
-      const nombreCompleto = String(datos[i][colNombre - 1]).trim();
-      const valorActualDia = String(datos[i][colDia - 1]).trim();
+      const valNombre = (colNombre > 0 && colNombre <= datos[i].length) ? String(datos[i][colNombre - 1]).trim() : '';
+      const nombreCompleto = valNombre || ('Participante (' + numeroDocumento + ')');
+      const valorActualDia = (colDia > 0 && colDia <= datos[i].length) ? String(datos[i][colDia - 1]).trim() : '';
 
       const colFicha = columnaEncabezado_(sheet, 'Número de Ficha');
       const colEmpresa = columnaEncabezado_(sheet, 'Empresa o Entidad');
@@ -451,9 +451,29 @@ function yaRegistrado_(sheet, numeroDocumento, columnaNumeroDoc) {
 function columnaEncabezado_(sheet, encabezado) {
   if (sheet.getLastRow() === 0) return -1;
   const filaEncabezados = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const target = String(encabezado).trim().toLowerCase();
+
+  // 1. Coincidencia exacta sin importar mayúsculas
   for (let i = 0; i < filaEncabezados.length; i++) {
-    if (String(filaEncabezados[i]).trim() === encabezado) return i + 1;
+    const encFila = String(filaEncabezados[i]).trim().toLowerCase();
+    if (encFila === target) return i + 1;
   }
+
+  // 2. Coincidencia flexible por palabras clave / alias
+  for (let i = 0; i < filaEncabezados.length; i++) {
+    const encFila = String(filaEncabezados[i]).trim().toLowerCase();
+    
+    if (target.includes('nombre')) {
+      if (encFila.includes('nombre') || encFila.includes('aprendiz') || encFila.includes('participante')) return i + 1;
+    }
+    if (target.includes('documento')) {
+      if (encFila.includes('documento') || encFila.includes('cedula') || encFila.includes('cédula') || encFila === 'id') return i + 1;
+    }
+    if (target.includes('ficha')) {
+      if (encFila.includes('ficha')) return i + 1;
+    }
+  }
+
   return -1;
 }
 

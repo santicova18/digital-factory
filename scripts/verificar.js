@@ -216,10 +216,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const data = await response.json();
         if (data && data.result === 'success') {
+          const resolvedName = data.nombreCompleto || data.nombre || data.Nombre || `Aprendiz SENA (${documento})`;
           return {
             status: data.yaRegistrado ? 'ALREADY_REGISTERED' : 'SUCCESS',
             message: data.message || (data.yaRegistrado ? 'Asistencia Registrada Previamente' : '¡Asistencia Confirmada Exitosamente!'),
-            nombreCompleto: data.nombreCompleto,
+            nombreCompleto: resolvedName,
+            nombre: resolvedName,
             documento: data.numeroDocumento || documento,
             rol: data.rol || 'Aprendiz SENA',
             ficha: data.ficha || 'Bootcamp Fábrica Digital',
@@ -249,6 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
           status: 'ALREADY_REGISTERED',
           message: 'Asistencia Registrada Previamente (22 de Septiembre: Ok)',
           nombreCompleto: found.nombre,
+          nombre: found.nombre,
           documento: found.id,
           rol: found.rol,
           ficha: found.ficha,
@@ -263,6 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
           status: 'SUCCESS',
           message: '¡Asistencia Confirmada Exitosamente!',
           nombreCompleto: found.nombre,
+          nombre: found.nombre,
           documento: found.id,
           rol: found.rol,
           ficha: found.ficha,
@@ -291,6 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
         status: 'SUCCESS',
         message: '¡Asistencia Confirmada Exitosamente!',
         nombreCompleto: dynName,
+        nombre: dynName,
         documento: documento,
         rol: dynAttendee.rol,
         ficha: dynAttendee.ficha,
@@ -313,6 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderFeedback(res) {
     if (!resultArea) return;
     let html = '';
+    const nombreVisual = res.nombreCompleto || res.nombre || (res.attendee && res.attendee.nombre) || `Aprendiz SENA (${res.documento || ''})`;
 
     if (res.status === 'SUCCESS') {
       html = `
@@ -329,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="attendee-grid">
             <div class="attendee-item" style="grid-column: span 2;">
               <span class="attendee-item-label">Nombre del Aprendiz / Participante</span>
-              <span class="attendee-item-value" style="font-size: 1.15rem; color: var(--neon-lime, #D4F842);">${res.nombreCompleto}</span>
+              <span class="attendee-item-value" style="font-size: 1.15rem; color: var(--neon-lime, #D4F842);">${nombreVisual}</span>
             </div>
             <div class="attendee-item">
               <span class="attendee-item-label">Documento de Identidad</span>
@@ -361,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="attendee-grid">
             <div class="attendee-item" style="grid-column: span 2;">
               <span class="attendee-item-label">Nombre del Aprendiz / Participante</span>
-              <span class="attendee-item-value" style="font-size: 1.1rem; color: #fbbf24;">${res.nombreCompleto}</span>
+              <span class="attendee-item-value" style="font-size: 1.1rem; color: #fbbf24;">${nombreVisual}</span>
             </div>
             <div class="attendee-item">
               <span class="attendee-item-label">Documento</span>
