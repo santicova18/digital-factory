@@ -241,32 +241,44 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Intentar registrar asistencia en el backend de Google Apps Script
     if (BACKEND_CONFIG.gasUrl && !BACKEND_CONFIG.gasUrl.includes('PEGA_AQUI')) {
       try {
-        const response = await fetch(BACKEND_CONFIG.gasUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'asistencia',
-            numeroDocumento: documento,
-            dia: currentSelectedDay
-          })
-        });
+        // Enviar vía GET con parámetros en URL (evita bloqueos de CORS/preflight en Apps Script)
+        const getUrl = `${BACKEND_CONFIG.gasUrl}?action=asistencia&numeroDocumento=${encodeURIComponent(documento)}&dia=${encodeURIComponent(currentSelectedDay)}`;
+        let response = await fetch(getUrl);
+        let data = await response.json();
 
-        const data = await response.json();
+        // Si GET responde sin datos, intentar con POST
+        if (!data || (!data.result && !data.nombreCompleto)) {
+          response = await fetch(BACKEND_CONFIG.gasUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              action: 'asistencia',
+              numeroDocumento: documento,
+              dia: currentSelectedDay
+            })
+          });
+          data = await response.json();
+        }
+
         if (data && data.result === 'success') {
-          const resolvedName = data.nombreCompleto || data.nombre || data.Nombre || `Aprendiz SENA (${documento})`;
-          return {
-            status: data.yaRegistrado ? 'ALREADY_REGISTERED' : 'SUCCESS',
-            message: data.message || (data.yaRegistrado ? 'Asistencia Registrada Previamente' : '¡Asistencia Confirmada!'),
-            nombreCompleto: resolvedName,
-            nombre: resolvedName,
-            documento: data.numeroDocumento || documento,
-            rol: data.rol || 'Aprendiz SENA',
-            ficha: data.ficha || 'Bootcamp Fábrica Digital',
-            dia: data.dia || currentSelectedDay,
-            hora: currentTimeStr,
-            fecha: currentDateStr
-          };
-        } else if (data && data.result === 'error') {
+          const resolvedName = data.nombreCompleto || data.nombre || data.Nombre;
+          if (resolvedName) {
+            return {
+              status: data.yaRegistrado ? 'ALREADY_REGISTERED' : 'SUCCESS',
+              message: data.message || (data.yaRegistrado ? 'Asistencia Registrada Previamente' : '¡Asistencia Confirmada!'),
+              nombreCompleto: resolvedName,
+              nombre: resolvedName,
+              documento: data.numeroDocumento || documento,
+              rol: data.rol || 'Aprendiz SENA',
+              ficha: data.ficha || 'Bootcamp Fábrica Digital',
+              dia: data.dia || currentSelectedDay,
+              hora: currentTimeStr,
+              fecha: currentDateStr
+            };
+          }
+        }
+        
+        if (data && data.result === 'error') {
           return {
             status: 'NOT_FOUND',
             message: data.message || 'El número de documento no se encuentra en el registro oficial.',
@@ -274,25 +286,25 @@ document.addEventListener('DOMContentLoaded', () => {
           };
         }
       } catch (err) {
-        console.warn('Backend remoto no disponible, usando validación local de respaldo:', err);
+        console.warn('Error al comunicarse con el backend de Google Apps Script:', err);
       }
     }
 
-    // 2. Respaldo local con mockAttendees
-    await new Promise(r => setTimeout(r, 500));
+    // 2. Respaldo local de prueba con mockAttendees precargados
+    await new Promise(r => setTimeout(r, 400));
 
     const found = mockAttendees.find(a => a.id === documento);
     if (found) {
       if (found.asistio) {
         return {
           status: 'ALREADY_REGISTERED',
-          message: 'Asistencia Registrada Previamente (22 de Septiembre: Ok)',
+          message: 'Asistencia Registrada Previamente',
           nombreCompleto: found.nombre,
           nombre: found.nombre,
           documento: found.id,
           rol: found.rol,
           ficha: found.ficha,
-          dia: '22 de Septiembre',
+          dia: currentSelectedDay,
           hora: found.horaAsistencia || currentTimeStr,
           fecha: currentDateStr
         };
@@ -301,47 +313,20 @@ document.addEventListener('DOMContentLoaded', () => {
         found.horaAsistencia = currentTimeStr;
         return {
           status: 'SUCCESS',
-          message: '¡Asistencia Confirmada Exitosamente!',
+          message: '¡Asistencia Confirmada!',
           nombreCompleto: found.nombre,
           nombre: found.nombre,
           documento: found.id,
           rol: found.rol,
           ficha: found.ficha,
-          dia: '22 de Septiembre',
+          dia: currentSelectedDay,
           hora: currentTimeStr,
           fecha: currentDateStr
         };
       }
     }
 
-    // Registro dinámico local para pruebas
-    if (documento.length >= 6 && documento.length <= 11) {
-      const dynName = `Aprendiz SENA (${documento})`;
-      const dynAttendee = {
-        id: documento,
-        nombre: dynName,
-        rol: 'Aprendiz SENA',
-        ficha: 'Ficha 2824912 · ADSO',
-        centro: 'Nodo TIC Barranquilla',
-        asistio: true,
-        horaAsistencia: currentTimeStr
-      };
-      mockAttendees.push(dynAttendee);
-
-      return {
-        status: 'SUCCESS',
-        message: '¡Asistencia Confirmada Exitosamente!',
-        nombreCompleto: dynName,
-        nombre: dynName,
-        documento: documento,
-        rol: dynAttendee.rol,
-        ficha: dynAttendee.ficha,
-        dia: '22 de Septiembre',
-        hora: currentTimeStr,
-        fecha: currentDateStr
-      };
-    }
-
+    // Si el documento no existe en la lista oficial
     return {
       status: 'NOT_FOUND',
       message: 'Documento No Encontrado en el Sistema',

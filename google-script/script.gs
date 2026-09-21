@@ -31,11 +31,19 @@ const CONFIG = {
 /* ------------------------------- ENDPOINTS -------------------------------- */
 
 function doPost(e) {
-  let payload;
-  try {
-    payload = JSON.parse(e.postData.contents);
-  } catch (err) {
-    return jsonResponse({ result: 'error', message: 'Cuerpo de la petición inválido.' });
+  let payload = {};
+  if (e && e.postData && e.postData.contents) {
+    try {
+      payload = JSON.parse(e.postData.contents);
+    } catch (err) {
+      payload = {};
+    }
+  }
+  if (e && e.parameter) {
+    if (e.parameter.action) payload.action = e.parameter.action;
+    if (e.parameter.documento || e.parameter.numeroDocumento) payload.numeroDocumento = e.parameter.documento || e.parameter.numeroDocumento;
+    if (e.parameter.dia) payload.dia = e.parameter.dia;
+    if (e.parameter.role) payload.role = e.parameter.role;
   }
 
   try {
