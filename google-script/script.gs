@@ -149,36 +149,43 @@ function buscarYMarcarAsistencia_(nombreHoja, numeroDocumento, colDiaNombre) {
   }
 
   const colDoc = columnaEncabezado_(sheet, 'Número de Documento');
-  const colNombre = columnaEncabezado_(sheet, 'Nombre Completo');
-  let colDia = columnaEncabezado_(sheet, colDiaNombre);
-
-  if (colDoc <= 0 || colNombre <= 0) {
+  if (colDoc <= 0) {
     return { encontrado: false };
   }
 
+  const colNombre = columnaEncabezado_(sheet, 'Nombre Completo');
+  let colDia = columnaEncabezado_(sheet, colDiaNombre);
+
   if (colDia <= 0) {
-    const ultimaCol = sheet.getLastColumn() + 1;
-    sheet.getRange(1, ultimaCol).setValue(colDiaNombre).setFontWeight('bold');
-    colDia = ultimaCol;
+    colDia = sheet.getLastColumn() + 1;
+    sheet.getRange(1, colDia).setValue(colDiaNombre).setFontWeight('bold');
   }
 
   const lastRow = sheet.getLastRow();
   const datos = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues();
-  const docLimpio = String(numeroDocumento).replace(/\D/g, '');
+  const docLimpio = String(numeroDocumento).replace(/\D/g, '').trim();
 
   for (let i = 0; i < datos.length; i++) {
+    const filaExcel = i + 2;
     const docFila = String(datos[i][colDoc - 1]).trim();
-    const docFilaLimpio = docFila.replace(/\D/g, '');
+    const docFilaLimpio = docFila.replace(/\D/g, '').trim();
 
     if (docFila === numeroDocumento || (docLimpio && docLimpio === docFilaLimpio)) {
-      const valNombre = (colNombre > 0 && colNombre <= datos[i].length) ? String(datos[i][colNombre - 1]).trim() : '';
+      let valNombre = '';
+      if (colNombre > 0 && colNombre <= datos[i].length) {
+        valNombre = String(datos[i][colNombre - 1]).trim();
+      }
       const nombreCompleto = valNombre || ('Participante (' + numeroDocumento + ')');
-      const valorActualDia = (colDia > 0 && colDia <= datos[i].length) ? String(datos[i][colDia - 1]).trim() : '';
+      
+      let valorActualDia = '';
+      if (colDia > 0 && colDia <= datos[i].length) {
+        valorActualDia = String(datos[i][colDia - 1]).trim();
+      }
 
       const colFicha = columnaEncabezado_(sheet, 'Número de Ficha');
       const colEmpresa = columnaEncabezado_(sheet, 'Empresa o Entidad');
-      const ficha = colFicha > 0 ? String(datos[i][colFicha - 1]).trim() : '';
-      const empresa = colEmpresa > 0 ? String(datos[i][colEmpresa - 1]).trim() : '';
+      const ficha = (colFicha > 0 && colFicha <= datos[i].length) ? String(datos[i][colFicha - 1]).trim() : '';
+      const empresa = (colEmpresa > 0 && colEmpresa <= datos[i].length) ? String(datos[i][colEmpresa - 1]).trim() : '';
 
       let yaRegistrado = false;
       if (valorActualDia.toLowerCase() === 'ok') {
